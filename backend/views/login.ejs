@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login Page</title>
+  <link rel="stylesheet" href="/css/auth.css" />
+</head>
+<body>
+
+<div class="auth-container">
+  <h2>User Login</h2>
+
+  <% if (typeof error !== "undefined") { %>
+    <div class="error-msg"><%= error %></div>
+  <% } %>
+
+  <% if (typeof success !== "undefined") { %>
+    <div class="success-msg"><%= success %></div>
+  <% } %>
+
+  <form action="/api/auth/login" method="POST">
+
+    <div class="input-group">
+      <input type="email" name="email" required />
+      <label>Email</label>
+    </div>
+
+    <div class="input-group">
+      <input type="password" name="password" required />
+      <label>Password</label>
+    </div>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <div class="auth-links">
+    Don’t have an account? <a href="/api/auth/register">Register</a>
+  </div>
+</div>
+
+</body>
+</html>
