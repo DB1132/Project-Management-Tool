@@ -12,6 +12,7 @@ services:
 
   web:
     build: .
+    image: project-management-tool
     container_name: web_app_service
     ports:
       - '5000:5000'
