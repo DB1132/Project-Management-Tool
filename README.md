@@ -329,7 +329,7 @@ Real-time Group Chat Drawer
 
 # 👨‍💻 Author
 
-**Deep Baldha**
+**Dip Baldha**
 
 GitHub: [https://github.com/DB1132](https://github.com/DB1132)
 
