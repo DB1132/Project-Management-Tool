@@ -75,6 +75,9 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/users", userRoutes);
 
+// Serve file uploads statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Serve React build if applicable
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 app.get(/(.*)/, (req, res) => {

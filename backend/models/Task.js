@@ -44,6 +44,15 @@ const taskSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
+    attachments: [
+      {
+        filename: { type: String, required: true },
+        path: { type: String, required: true },
+        uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        uploadedAt: { type: Date, default: Date.now }
+      }
+    ]
   },
   { timestamps: true }
 );

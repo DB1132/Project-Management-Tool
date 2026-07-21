@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Send,
   X,
+  Paperclip,
 } from "lucide-react";
 
 const SOCKET_SERVER_URL = "http://localhost:5000";
@@ -132,6 +133,24 @@ const ProjectDetails = () => {
       );
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleFileUpload = async (taskId, file) => {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const { data } = await api.post(`/tasks/${taskId}/attachments`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setTasks(tasks.map((t) => (t._id === taskId ? data : t)));
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to upload file");
     }
   };
 
@@ -269,27 +288,57 @@ const ProjectDetails = () => {
                     >
                       {task.description}
                     </p>
+
+                    {task.attachments && task.attachments.length > 0 && (
+                      <div style={{ marginTop: "12px", borderTop: "1px solid var(--glass-border)", paddingTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "2px" }}>Attachments:</p>
+                        {task.attachments.map((att) => (
+                          <a
+                            key={att._id}
+                            href={`http://localhost:5000/${att.path}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ fontSize: "0.8rem", color: "var(--primary)", textDecoration: "none", display: "flex", alignItems: "center", gap: "4px" }}
+                            title={`Uploaded by ${att.uploadedBy?.name || "Unknown"}`}
+                          >
+                            📎 <span style={{ textDecoration: "underline", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", maxWidth: "200px" }}>{att.filename}</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
                     <div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
+                        marginTop: "12px",
                       }}
                     >
-                      <span
-                        style={{
-                          fontSize: "0.75rem",
-                          padding: "4px 8px",
-                          borderRadius: "4px",
-                          background:
-                            task.priority === "high"
-                              ? "rgba(239, 68, 68, 0.2)"
-                              : "rgba(255, 255, 255, 0.1)",
-                          color: task.priority === "high" ? "#fca5a5" : "#cbd5e1",
-                        }}
-                      >
-                        {task.priority}
-                      </span>
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                        <span
+                          style={{
+                            fontSize: "0.75rem",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                            background:
+                              task.priority === "high"
+                                ? "rgba(239, 68, 68, 0.2)"
+                                : "rgba(255, 255, 255, 0.1)",
+                            color: task.priority === "high" ? "#fca5a5" : "#cbd5e1",
+                          }}
+                        >
+                          {task.priority}
+                        </span>
+                        <label style={{ cursor: "pointer", display: "flex", alignItems: "center", color: "var(--text-muted)" }} title="Attach file">
+                          <input
+                            type="file"
+                            style={{ display: "none" }}
+                            onChange={(e) => handleFileUpload(task._id, e.target.files[0])}
+                          />
+                          <Paperclip size={14} />
+                        </label>
+                      </div>
                       {canEditStatus ? (
                         <select
                           className="glass-input"

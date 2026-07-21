@@ -37,7 +37,9 @@ const getTasks = async (req, res) => {
     const membership = await ProjectMember.findOne({ projectId, userId: req.user._id });
     if (!membership) return res.status(403).json({ error: 'Not authorized to view tasks for this project' });
 
-    const tasks = await Task.find({ projectId }).populate('assignedTo', 'name email');
+    const tasks = await Task.find({ projectId })
+      .populate('assignedTo', 'name email')
+      .populate('attachments.uploadedBy', 'name email');
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -50,11 +52,9 @@ const updateTaskStatus = async (req, res) => {
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Task not found' });
 
-    // Verify user is member of project
     const membership = await ProjectMember.findOne({ projectId: task.projectId, userId: req.user._id });
     if (!membership) return res.status(403).json({ error: 'Not authorized to access this project' });
 
-    // Admins can change status of any task. Regular members can only change tasks assigned to them.
     const isAdmin = membership.role === 'admin';
     const isAssignedToUser = task.assignedTo && task.assignedTo.toString() === req.user._id.toString();
 
@@ -71,8 +71,40 @@ const updateTaskStatus = async (req, res) => {
   }
 };
 
+const uploadTaskAttachment = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const task = await Task.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    const membership = await ProjectMember.findOne({ projectId: task.projectId, userId: req.user._id });
+    if (!membership) return res.status(403).json({ error: 'Not authorized to access this project' });
+
+    const attachment = {
+      filename: req.file.originalname,
+      path: `uploads/${req.file.filename}`, 
+      uploadedBy: req.user._id
+    };
+
+    task.attachments.push(attachment);
+    await task.save();
+
+    const updatedTask = await Task.findById(task._id)
+      .populate('assignedTo', 'name email')
+      .populate('attachments.uploadedBy', 'name email');
+
+    res.status(201).json(updatedTask);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createTask,
   getTasks,
-  updateTaskStatus
+  updateTaskStatus,
+  uploadTaskAttachment
 };
