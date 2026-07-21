@@ -14,12 +14,21 @@ dbconnect();
 const app = express();
 const server = http.createServer(app);
 
+// Dynamic CORS option to allow any localhost port during development
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+};
+
 // Socket.io setup
 const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173", // Vite default port
-    credentials: true
-  }
+  cors: corsOptions
 });
 
 io.on('connection', (socket) => {
@@ -51,7 +60,7 @@ io.on('connection', (socket) => {
   });
 });
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json());
 app.use(cookieParser());
