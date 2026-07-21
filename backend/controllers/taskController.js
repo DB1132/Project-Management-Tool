@@ -52,7 +52,15 @@ const updateTaskStatus = async (req, res) => {
 
     // Verify user is member of project
     const membership = await ProjectMember.findOne({ projectId: task.projectId, userId: req.user._id });
-    if (!membership) return res.status(403).json({ error: 'Not authorized' });
+    if (!membership) return res.status(403).json({ error: 'Not authorized to access this project' });
+
+    // Admins can change status of any task. Regular members can only change tasks assigned to them.
+    const isAdmin = membership.role === 'admin';
+    const isAssignedToUser = task.assignedTo && task.assignedTo.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isAssignedToUser) {
+      return res.status(403).json({ error: 'You can only update tasks assigned to you' });
+    }
 
     task.status = status;
     await task.save();

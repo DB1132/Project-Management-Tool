@@ -137,6 +137,10 @@ const ProjectDetails = () => {
 
   const getTasksByStatus = (status) => tasks.filter((t) => t.status === status);
 
+  const currentUserId = user?.id || user?._id;
+  const userMembership = members.find(m => m.userId?._id === currentUserId || m.userId === currentUserId);
+  const isAdmin = userMembership?.role === 'admin';
+
   if (!project)
     return <div style={{ padding: "40px", color: "white" }}>Loading...</div>;
 
@@ -230,84 +234,94 @@ const ProjectDetails = () => {
                 overflowY: "auto",
               }}
             >
-              {getTasksByStatus(status).map((task) => (
-                <div
-                  key={task._id}
-                  className="glass-panel animate-fade-in"
-                  style={{
-                    padding: "16px",
-                    background: "rgba(255,255,255,0.03)",
-                  }}
-                >
-                  <h4 style={{ fontWeight: "500", marginBottom: "4px" }}>
-                    {task.title}
-                  </h4>
-                  {task.assignedTo && (
+              {getTasksByStatus(status).map((task) => {
+                const isAssignedToMe = task.assignedTo && (task.assignedTo._id === currentUserId || task.assignedTo === currentUserId);
+                const canEditStatus = isAdmin || isAssignedToMe;
+                return (
+                  <div
+                    key={task._id}
+                    className="glass-panel animate-fade-in"
+                    style={{
+                      padding: "16px",
+                      background: "rgba(255,255,255,0.03)",
+                    }}
+                  >
+                    <h4 style={{ fontWeight: "500", marginBottom: "4px" }}>
+                      {task.title}
+                    </h4>
+                    {task.assignedTo && (
+                      <p
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "var(--primary)",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        👤 {task.assignedTo.name}
+                      </p>
+                    )}
                     <p
                       style={{
-                        fontSize: "0.8rem",
-                        color: "var(--primary)",
-                        marginBottom: "8px",
+                        fontSize: "0.85rem",
+                        color: "var(--text-muted)",
+                        marginBottom: "12px",
                       }}
                     >
-                      👤 {task.assignedTo.name}
+                      {task.description}
                     </p>
-                  )}
-                  <p
-                    style={{
-                      fontSize: "0.85rem",
-                      color: "var(--text-muted)",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    {task.description}
-                  </p>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
+                    <div
                       style={{
-                        fontSize: "0.75rem",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        background:
-                          task.priority === "high"
-                            ? "rgba(239, 68, 68, 0.2)"
-                            : "rgba(255, 255, 255, 0.1)",
-                        color: task.priority === "high" ? "#fca5a5" : "#cbd5e1",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
                       }}
                     >
-                      {task.priority}
-                    </span>
-                    <select
-                      className="glass-input"
-                      style={{
-                        width: "auto",
-                        padding: "4px 8px",
-                        fontSize: "0.8rem",
-                      }}
-                      value={task.status}
-                      onChange={(e) =>
-                        updateTaskStatus(task._id, e.target.value)
-                      }
-                    >
-                      <option value="todo" style={{ color: "black" }}>
-                        Todo
-                      </option>
-                      <option value="in-progress" style={{ color: "black" }}>
-                        In Progress
-                      </option>
-                      <option value="done" style={{ color: "black" }}>
-                        Done
-                      </option>
-                    </select>
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          background:
+                            task.priority === "high"
+                              ? "rgba(239, 68, 68, 0.2)"
+                              : "rgba(255, 255, 255, 0.1)",
+                          color: task.priority === "high" ? "#fca5a5" : "#cbd5e1",
+                        }}
+                      >
+                        {task.priority}
+                      </span>
+                      {canEditStatus ? (
+                        <select
+                          className="glass-input"
+                          style={{
+                            width: "auto",
+                            padding: "4px 8px",
+                            fontSize: "0.8rem",
+                          }}
+                          value={task.status}
+                          onChange={(e) =>
+                            updateTaskStatus(task._id, e.target.value)
+                          }
+                        >
+                          <option value="todo" style={{ color: "black" }}>
+                            Todo
+                          </option>
+                          <option value="in-progress" style={{ color: "black" }}>
+                            In Progress
+                          </option>
+                          <option value="done" style={{ color: "black" }}>
+                            Done
+                          </option>
+                        </select>
+                      ) : (
+                        <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", textTransform: "capitalize" }}>
+                          {task.status.replace("-", " ")}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}
