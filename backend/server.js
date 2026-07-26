@@ -29,6 +29,8 @@ const corsOptions = {
     const allowedHost = getHostName(process.env.FRONTEND_URL);
     const requestHost = getHostName(origin);
 
+    console.log(`[CORS Debug] Request Origin: "${origin}" | Request Host: "${requestHost}" | Allowed Host (FRONTEND_URL): "${allowedHost}"`);
+
     if (
       !origin || 
       /^http:\/\/localhost:\d+$/.test(origin) || 
@@ -36,6 +38,7 @@ const corsOptions = {
     ) {
       callback(null, true);
     } else {
+      console.warn(`[CORS Blocked] Request Host "${requestHost}" does not match Allowed Host "${allowedHost}"`);
       callback(new Error("Not allowed by CORS"));
     }
   },
