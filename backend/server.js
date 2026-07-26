@@ -17,10 +17,16 @@ const server = http.createServer(app);
 // Dynamic CORS option to allow any localhost port or production Vercel URL
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || /^http:\/\/localhost:\d+$/.test(origin) || origin === process.env.FRONTEND_URL) {
+    const frontendUrl = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.trim() : null;
+    if (
+      !origin || 
+      /^http:\/\/localhost:\d+$/.test(origin) || 
+      origin === frontendUrl || 
+      origin.replace(/\/$/, "") === frontendUrl?.replace(/\/$/, "")
+    ) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true
