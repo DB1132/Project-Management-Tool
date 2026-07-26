@@ -295,7 +295,7 @@ const ProjectDetails = () => {
                         {task.attachments.map((att) => (
                           <a
                             key={att._id}
-                            href={`http://localhost:5000/${att.path}`}
+                            href={att.path.startsWith('http') ? att.path : `http://localhost:5000/${att.path}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{ fontSize: "0.8rem", color: "var(--primary)", textDecoration: "none", display: "flex", alignItems: "center", gap: "4px" }}

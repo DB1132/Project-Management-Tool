@@ -1,5 +1,13 @@
 const Task = require('../models/Task');
 const ProjectMember = require('../models/ProjectMember');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 
 const createTask = async (req, res) => {
   try {
@@ -80,12 +88,32 @@ const uploadTaskAttachment = async (req, res) => {
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Task not found' });
 
+    // Verify user is member of project
     const membership = await ProjectMember.findOne({ projectId: task.projectId, userId: req.user._id });
     if (!membership) return res.status(403).json({ error: 'Not authorized to access this project' });
 
+    // Helper to upload buffer to Cloudinary
+    const uploadFromBuffer = (fileBuffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { resource_type: 'auto' },
+          (error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          }
+        );
+        stream.end(fileBuffer);
+      });
+    };
+
+    const cloudinaryResult = await uploadFromBuffer(req.file.buffer);
+
     const attachment = {
       filename: req.file.originalname,
-      path: `uploads/${req.file.filename}`, 
+      path: cloudinaryResult.secure_url, // Store the direct Cloudinary URL
       uploadedBy: req.user._id
     };
 
