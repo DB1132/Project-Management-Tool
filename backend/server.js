@@ -17,12 +17,28 @@ const server = http.createServer(app);
 // Dynamic CORS option to allow any localhost port or production Vercel URL
 const corsOptions = {
   origin: function (origin, callback) {
-    const frontendUrl = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.trim() : null;
+    let frontendUrlDomain = null;
+    if (process.env.FRONTEND_URL) {
+      try {
+        frontendUrlDomain = new URL(process.env.FRONTEND_URL.trim()).origin;
+      } catch (e) {
+        frontendUrlDomain = process.env.FRONTEND_URL.trim().replace(/\/$/, "");
+      }
+    }
+
+    let originDomain = null;
+    if (origin) {
+      try {
+        originDomain = new URL(origin).origin;
+      } catch (e) {
+        originDomain = origin.replace(/\/$/, "");
+      }
+    }
+
     if (
       !origin || 
       /^http:\/\/localhost:\d+$/.test(origin) || 
-      origin === frontendUrl || 
-      origin.replace(/\/$/, "") === frontendUrl?.replace(/\/$/, "")
+      originDomain === frontendUrlDomain
     ) {
       callback(null, true);
     } else {
