@@ -14,31 +14,25 @@ dbconnect();
 const app = express();
 const server = http.createServer(app);
 
+// Helper to get hostname from any URL string
+const getHostName = (urlStr) => {
+  if (!urlStr) return "";
+  let hostname = urlStr.trim().replace(/^(https?:\/\/)?(www\.)?/, ""); // remove protocol and www
+  hostname = hostname.split("/")[0]; // remove paths
+  hostname = hostname.split(":")[0]; // remove ports
+  return hostname.toLowerCase();
+};
+
 // Dynamic CORS option to allow any localhost port or production Vercel URL
 const corsOptions = {
   origin: function (origin, callback) {
-    let frontendUrlDomain = null;
-    if (process.env.FRONTEND_URL) {
-      try {
-        frontendUrlDomain = new URL(process.env.FRONTEND_URL.trim()).origin;
-      } catch (e) {
-        frontendUrlDomain = process.env.FRONTEND_URL.trim().replace(/\/$/, "");
-      }
-    }
-
-    let originDomain = null;
-    if (origin) {
-      try {
-        originDomain = new URL(origin).origin;
-      } catch (e) {
-        originDomain = origin.replace(/\/$/, "");
-      }
-    }
+    const allowedHost = getHostName(process.env.FRONTEND_URL);
+    const requestHost = getHostName(origin);
 
     if (
       !origin || 
       /^http:\/\/localhost:\d+$/.test(origin) || 
-      originDomain === frontendUrlDomain
+      requestHost === allowedHost
     ) {
       callback(null, true);
     } else {
