@@ -27,14 +27,7 @@ const registerUser = async (req, res) => {
     });
 
     const token = generateToken(newUser._id);
-
-    res.cookie("jwt", token, {
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return res.status(201).json({ user: { id: newUser._id, name: newUser.name, email: newUser.email } });
+    return res.status(201).json({ token, user: { id: newUser._id, name: newUser.name, email: newUser.email } });
 
   } catch (error) {
     console.error(error);
@@ -66,14 +59,7 @@ const loginUser = async (req, res) => {
 
     const token = generateToken(existingUser._id);
 
-    res.cookie("jwt", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return res.status(200).json({ user: { id: existingUser._id, name: existingUser.name, email: existingUser.email } });
+    return res.status(200).json({ token, user: { id: existingUser._id, name: existingUser.name, email: existingUser.email } });
 
   } catch (error) {
     console.error(error);
@@ -85,7 +71,6 @@ const loginUser = async (req, res) => {
 // LOGOUT USER
 // =======================
 const logoutUser = (req, res) => {
-  res.clearCookie("jwt");
   return res.status(200).json({ message: "Logged out successfully" });
 };
 

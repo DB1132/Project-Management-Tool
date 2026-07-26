@@ -14,10 +14,10 @@ dbconnect();
 const app = express();
 const server = http.createServer(app);
 
-// Dynamic CORS option to allow any localhost port during development
+// Dynamic CORS option to allow any localhost port or production Vercel URL
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
+    if (!origin || /^http:\/\/localhost:\d+$/.test(origin) || origin === process.env.FRONTEND_URL) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
