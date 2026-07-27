@@ -31,10 +31,14 @@ const corsOptions = {
 
     console.log(`[CORS Debug] Request Origin: "${origin}" | Request Host: "${requestHost}" | Allowed Host (FRONTEND_URL): "${allowedHost}"`);
 
+    // Match any Vercel preview domain (e.g. project-name-git-main-username.vercel.app)
+    const isVercelDomain = origin && /^https:\/\/[a-zA-Z0-9-._]+\.vercel\.app$/.test(origin);
+
     if (
       !origin || 
       /^http:\/\/localhost:\d+$/.test(origin) || 
-      requestHost === allowedHost
+      requestHost === allowedHost ||
+      isVercelDomain
     ) {
       callback(null, true);
     } else {
