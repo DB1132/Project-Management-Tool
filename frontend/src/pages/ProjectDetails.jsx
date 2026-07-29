@@ -49,6 +49,7 @@ const ProjectDetails = () => {
     fetchProjectData();
 
     // Socket.io setup
+    console.log("[Socket Debug] Connecting to Socket Server at:", SOCKET_SERVER_URL);
     socketRef.current = io(SOCKET_SERVER_URL, { withCredentials: true });
     socketRef.current.emit("join_project", id);
 
