@@ -13,7 +13,11 @@ import {
   Paperclip,
 } from "lucide-react";
 
-const SOCKET_SERVER_URL = "http://localhost:5000";
+const BACKEND_BASE_URL = import.meta.env.VITE_API_URL   
+  ? import.meta.env.VITE_API_URL.replace(/\/api$/, "") 
+  : "http://localhost:5000";
+
+const SOCKET_SERVER_URL = BACKEND_BASE_URL;
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -295,7 +299,7 @@ const ProjectDetails = () => {
                         {task.attachments.map((att) => (
                           <a
                             key={att._id}
-                            href={att.path.startsWith('http') ? att.path : `http://localhost:5000/${att.path}`}
+                            href={att.path.startsWith('http') ? att.path : `${BACKEND_BASE_URL}/${att.path}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{ fontSize: "0.8rem", color: "var(--primary)", textDecoration: "none", display: "flex", alignItems: "center", gap: "4px" }}
